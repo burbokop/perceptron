@@ -2,4 +2,4 @@
 
 
 
-![alt text](https://github.com/burbokop/factorization/blob/master/result.png)
+![alt text](https://github.com/burbokop/perceptron/blob/master/result.png)
