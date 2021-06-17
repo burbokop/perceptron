@@ -1,12 +1,28 @@
 #include "perceptrontrainer.h"
 
 #include <QTimer>
+#include <random>
 
+#include <src/math/kmath.h>
 
 void PerceptronTrainer::update() {
     if (m_maxIterationCount > 0 && m_running) {
+        if(m_iteration > 20) {
+            //якщо пошук відповіді виконується більше ніж 0.1 секунду, тоді "сігма" випадково збільшується або зменшується на 10% і спроба повторюється
+            //я зробив залежність від кількості ітерацій а не від часу, тому, що рахування наступного набору вагів робиться з інтервалом 50 мілісекунд,
+            //щоб частину процесопрного часу віддати на малювання графіки
+            if(KMath::instance()->random() > 0.5) {
+                m_sigma = m_sigma * 1.1;
+            } else {
+                m_sigma = m_sigma * 0.9;
+            }
+            qDebug() << "new sigma:" << m_sigma;
+            m_iteration = 0;
+        }
+
         auto currentReceipt = m_receipts[m_maxIterationCount % m_receipts.size()];
-        auto next = m_perceptron.next(QList<double>{ currentReceipt.first.x(), currentReceipt.first.y() }, p(), m_coefficient);
+        auto next = m_perceptron.next(QList<double>{ currentReceipt.first.x(), currentReceipt.first.y() }, p(), m_sigma);
+        m_iteration++;
         bool allTrue = true;
         for(auto& receipt : m_receipts) {
             if (!receipt.second(next.second.proceed({ receipt.first.x(), receipt.first.y() }), p())) {
@@ -40,19 +56,20 @@ PerceptronTrainer::PerceptronTrainer(QObject *parent) : QObject(parent) {
         run(r,
             400,
             Perceptron<double>({0, 0}),
-            0.000001,
+            0.000005,
             1000
             );
     });
 }
 
 
-void PerceptronTrainer::run(QVector<Receipt> receipts, double p, Perceptron<double> perceptron, double coefficient, int maxIterationCount) {
+void PerceptronTrainer::run(QVector<Receipt> receipts, double p, Perceptron<double> perceptron, double sigma, int maxIterationCount) {
     if (receipts.size() > 1) {
+        m_iteration = 0;
         setPerceptron(perceptron);
         m_receipts = receipts;
         setP(p);
-        m_coefficient = coefficient;
+        m_sigma = sigma;
         m_maxIterationCount = maxIterationCount;
 
         QList<QPointF> points;

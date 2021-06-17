@@ -38,4 +38,5 @@ target_link_libraries(perceptron
     Qt5::Widgets
     Qt5::Test
     Qt5::Qml
+    klibcore
     )

@@ -24,8 +24,9 @@ public:
 private:
 
     QVector<Receipt> m_receipts;
-    double m_coefficient;
+    double m_sigma;
     int m_maxIterationCount;
+    size_t m_iteration = 0;
 
 public:
     explicit PerceptronTrainer(QObject *parent = nullptr);
@@ -33,7 +34,7 @@ public:
     void run(QVector<Receipt> receipts,
              double p,
              Perceptron<double> perceptron,
-             double coefficient,
+             double sigma,
              int maxIterationCount
              );
 
